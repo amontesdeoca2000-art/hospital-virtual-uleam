@@ -1,0 +1,603 @@
+import type { Area, ClinicalCase, Database, Step } from '../model'
+const areaData = [
+  [
+    'recepcion',
+    'Recepción y admisión',
+    'Primer contacto y orientación del paciente.',
+    'Admisión ficticia, orientación y organización del ingreso.',
+  ],
+  [
+    'triaje',
+    'Triaje',
+    'Valoración de prioridad y reconocimiento de signos de alarma.',
+    'Evaluar signos vitales, identificar riesgo y comunicar la prioridad.',
+  ],
+  [
+    'emergencias',
+    'Emergencias',
+    'Atención simulada de situaciones agudas.',
+    'Reconocer deterioro, comunicar y coordinar atención supervisada.',
+  ],
+  [
+    'consulta',
+    'Consulta externa',
+    'Atención ambulatoria y educación para la salud.',
+    'Entrevista, valoración y seguimiento educativo.',
+  ],
+  [
+    'hospitalizacion',
+    'Hospitalización',
+    'Continuidad del cuidado durante la estancia.',
+    'Planificar cuidados y observar la evolución ficticia.',
+  ],
+  [
+    'enfermeria',
+    'Enfermería',
+    'Cuidado integral y razonamiento clínico.',
+    'Valoración, bioseguridad, signos vitales y cuidados básicos.',
+  ],
+  [
+    'interna',
+    'Medicina interna',
+    'Integración de sistemas y enfermedades del adulto.',
+    'Análisis de antecedentes y discusión interdisciplinaria.',
+  ],
+  [
+    'pediatria',
+    'Pediatría',
+    'Cuidado del niño y su familia.',
+    'Valoración del desarrollo y comunicación con cuidadores.',
+  ],
+  [
+    'gineco',
+    'Ginecología y obstetricia',
+    'Salud sexual, reproductiva y materna.',
+    'Educación y valoración simulada bajo supervisión.',
+  ],
+  [
+    'quirofano',
+    'Quirófano',
+    'Entorno de procedimientos quirúrgicos simulados.',
+    'Seguridad, asepsia y coordinación del equipo.',
+  ],
+  [
+    'uci',
+    'Unidad de cuidados intensivos',
+    'Observación de pacientes críticos ficticios.',
+    'Reconocer cambios y comunicar hallazgos al equipo.',
+  ],
+  [
+    'laboratorio',
+    'Laboratorio clínico',
+    'Comprensión de muestras y procesos biológicos.',
+    'Interpretación educativa y bioseguridad de muestras.',
+  ],
+  [
+    'imagenologia',
+    'Imagenología',
+    'Relación entre imágenes y estructuras anatómicas.',
+    'Identificación anatómica y seguridad del paciente.',
+  ],
+  [
+    'farmacia',
+    'Farmacia',
+    'Uso seguro de medicamentos en escenarios educativos.',
+    'Revisión conceptual, almacenamiento y prevención de errores.',
+  ],
+  [
+    'fisioterapia',
+    'Fisioterapia y rehabilitación',
+    'Movimiento, autonomía y recuperación funcional.',
+    'Evaluar marcha, movilidad, equilibrio y tolerancia al esfuerzo.',
+  ],
+  [
+    'direccion',
+    'Dirección y administración hospitalaria',
+    'Organización del hospital universitario virtual.',
+    'Coordinar equipos, responsabilidades y recursos simulados.',
+  ],
+  [
+    'bioseguridad',
+    'Área de bioseguridad',
+    'Prevención de exposición y protección del equipo.',
+    'Higiene de manos, guantes y precauciones según el riesgo.',
+  ],
+  [
+    'simulacion',
+    'Sala de simulación y aulas académicas',
+    'Espacio para conectar conceptos con decisiones.',
+    'Aprendizaje guiado, reflexión y actividades interdisciplinarias.',
+  ],
+]
+const areas: Area[] = areaData.map(([id, name, description, functions]) => ({
+  id,
+  name,
+  description,
+  functions,
+  active: true,
+}))
+function step(
+  id: string,
+  prompt: string,
+  correct: string,
+  incorrect: string,
+  explanation: string,
+): Step {
+  return {
+    id,
+    prompt,
+    options: [
+      {
+        id: id + 'a',
+        text: incorrect,
+        score: 0,
+        feedback: 'Revisa esta decisión. ' + explanation,
+      },
+      {
+        id: id + 'b',
+        text: correct,
+        score: 100,
+        feedback: 'Correcto. ' + explanation,
+      },
+    ],
+  }
+}
+const common = {
+  active: true,
+  difficulty: 'Inicial',
+  history: 'Sin antecedentes relevantes para este ejercicio.',
+  findings: 'Escenario ficticio con fines educativos.',
+  vitals: 'No aplica a esta actividad conceptual.',
+}
+const cases: ClinicalCase[] = [
+  {
+    ...common,
+    id: 'caso-triaje',
+    name: 'Primeros minutos en triaje',
+    type: 'Simulación',
+    description: 'Identifica señales de alarma y prioriza la valoración.',
+    patient:
+      'Paciente ficticio A, 58 años. Consulta por dolor torácico y dificultad respiratoria.',
+    history: 'Dolor de inicio reciente, sudoración y malestar.',
+    vitals:
+      'FC 118 lpm · FR 28 rpm · PA 90/60 mmHg · SpO₂ 89 % al aire ambiente.',
+    findings: 'Palidez y dificultad para hablar por falta de aire.',
+    careerId: 'enfermeria',
+    subjectId: 'fundamentos',
+    unitId: 'u-enfermeria',
+    areaId: 'triaje',
+    steps: [
+      step(
+        't1',
+        '¿Qué decisión inicial es más apropiada?',
+        'Activar valoración inmediata y avisar al equipo responsable.',
+        'Indicar que espere su turno por orden de llegada.',
+        'Los signos de compromiso respiratorio y circulatorio requieren atención inmediata; el orden de llegada no determina la prioridad.',
+      ),
+      step(
+        't2',
+        '¿Qué información debes comunicar?',
+        'Síntomas, signos vitales, inicio y cambios observados.',
+        'Únicamente la edad del paciente.',
+        'Una comunicación estructurada facilita la respuesta del equipo y evita omitir signos de alarma.',
+      ),
+      step(
+        't3',
+        'Mientras llega el equipo, ¿qué corresponde?',
+        'Mantener acompañamiento y vigilancia según indicaciones del equipo.',
+        'Dejar al paciente solo para completar formularios.',
+        'La reevaluación y la supervisión son prioritarias. La clasificación concreta depende del sistema de triaje y los protocolos locales.',
+      ),
+    ],
+  },
+  {
+    ...common,
+    id: 'caso-bioseguridad',
+    name: 'Manos seguras, cuidados seguros',
+    type: 'Simulación',
+    description: 'Decide cuándo realizar higiene de manos y utilizar guantes.',
+    patient:
+      'Paciente ficticio B, 32 años. Requiere cuidado de una herida superficial.',
+    careerId: 'enfermeria',
+    subjectId: 'fundamentos',
+    unitId: 'u-enfermeria',
+    areaId: 'bioseguridad',
+    steps: [
+      step(
+        'b1',
+        'Antes de colocarte los guantes, ¿qué haces?',
+        'Realizar higiene de manos.',
+        'Omitir la higiene porque los guantes la reemplazan.',
+        'Los guantes no sustituyen la higiene de manos. Debe realizarse antes y después de su uso.',
+      ),
+      step(
+        'b2',
+        'Al terminar el cuidado y pasar a otro paciente, ¿qué corresponde?',
+        'Retirar guantes, realizar higiene de manos y usar guantes nuevos si están indicados.',
+        'Conservar los mismos guantes si parecen limpios.',
+        'Los guantes se cambian entre pacientes y tareas cuando corresponde para evitar transmisión cruzada.',
+      ),
+      step(
+        'b3',
+        'Si las manos están visiblemente sucias, ¿qué eliges?',
+        'Lavado con agua y jabón según técnica supervisada.',
+        'Solo ponerse otro par de guantes.',
+        'La suciedad visible requiere lavado con agua y jabón. El equipo de protección se selecciona según el riesgo.',
+      ),
+    ],
+  },
+  {
+    ...common,
+    id: 'caso-huesos',
+    name: 'El hueso también tiene una función',
+    type: 'Actividad',
+    description: 'Relaciona estructura ósea, articulaciones y movimiento.',
+    patient:
+      'Persona ficticia C, 21 años. Analiza la mecánica de la rodilla en una práctica.',
+    careerId: 'enfermeria',
+    subjectId: 'fundamentos',
+    unitId: 'u-anatomia',
+    areaId: 'simulacion',
+    steps: [
+      step(
+        'h1',
+        '¿Qué relación estructura-función es correcta?',
+        'El tejido óseo brinda soporte y actúa como palanca para el movimiento.',
+        'El hueso solo sirve como reserva de agua.',
+        'Los huesos dan soporte, protegen órganos, participan en la homeostasis mineral y actúan como palancas.',
+      ),
+      step(
+        'h2',
+        '¿Qué conecta un músculo con un hueso?',
+        'Un tendón.',
+        'Un ligamento articular.',
+        'El tendón transmite la fuerza muscular al hueso; los ligamentos conectan huesos y contribuyen a la estabilidad.',
+      ),
+      step(
+        'h3',
+        '¿Cómo contribuye el cartílago articular?',
+        'Facilita el deslizamiento y distribuye cargas.',
+        'Produce la contracción muscular.',
+        'El cartílago articular reduce fricción y distribuye cargas; la contracción es una función muscular.',
+      ),
+    ],
+  },
+  {
+    ...common,
+    id: 'caso-fisio',
+    name: 'Volver a moverse con confianza',
+    type: 'Simulación',
+    description:
+      'Realiza una valoración funcional inicial y propone un objetivo seguro.',
+    patient:
+      'Persona ficticia D, 45 años. Consulta por dificultad al caminar tras un periodo de inmovilidad.',
+    history:
+      'Derivación ficticia a rehabilitación. Sin autorización para esfuerzos intensos.',
+    vitals:
+      'Sin signos de alarma descritos en la derivación; deben comprobarse antes del esfuerzo.',
+    findings: 'Marcha lenta y fatiga con distancias cortas.',
+    careerId: 'fisioterapia',
+    subjectId: 'practicas',
+    unitId: 'u-fisio',
+    areaId: 'fisioterapia',
+    steps: [
+      step(
+        'f1',
+        '¿Cómo inicias la sesión?',
+        'Entrevistar, identificar limitaciones, revisar seguridad y consentimiento.',
+        'Comenzar con ejercicios máximos sin valoración.',
+        'La valoración inicial identifica objetivos, antecedentes, signos de alarma y tolerancia antes de intervenir.',
+      ),
+      step(
+        'f2',
+        'Durante la marcha aparece mareo y dolor torácico. ¿Qué haces?',
+        'Detener la actividad, proteger de caídas y solicitar valoración clínica.',
+        'Continuar para aumentar resistencia.',
+        'Los síntomas de alarma requieren detener el esfuerzo y activar el circuito de atención según el entorno.',
+      ),
+      step(
+        'f3',
+        '¿Qué objetivo inicial es más apropiado?',
+        'Un objetivo funcional gradual e individualizado tras la valoración.',
+        'La misma rutina intensa para todos.',
+        'La progresión depende de la valoración, la respuesta y la supervisión profesional; no existe una pauta universal.',
+      ),
+    ],
+  },
+  {
+    ...common,
+    id: 'caso-celula',
+    name: 'La energía detrás de la recuperación',
+    type: 'Evaluación',
+    description: 'Explora membrana celular, ATP y reparación tisular.',
+    patient: 'Modelo celular ficticio de una práctica de Biología.',
+    careerId: '',
+    subjectId: 'bio-enf',
+    unitId: 'u-biologia-enf',
+    areaId: 'laboratorio',
+    steps: [
+      step(
+        'c1',
+        '¿Qué función tiene la membrana plasmática?',
+        'Regular selectivamente el intercambio con el entorno.',
+        'Permitir el paso ilimitado de todas las sustancias.',
+        'La membrana es una barrera selectiva; sus proteínas participan en transporte y comunicación.',
+      ),
+      step(
+        'c2',
+        '¿Qué representa el ATP?',
+        'Una molécula que participa en la transferencia de energía celular.',
+        'Una estructura ósea.',
+        'La hidrólisis del ATP puede acoplarse a procesos como transporte activo y contracción muscular.',
+      ),
+      step(
+        'c3',
+        '¿Qué distingue a la apoptosis?',
+        'Es una muerte celular regulada que participa en la homeostasis.',
+        'Siempre equivale a necrosis por lesión aguda.',
+        'La apoptosis es regulada; la necrosis suele asociarse a pérdida de integridad y respuesta inflamatoria.',
+      ),
+    ],
+  },
+  {
+    ...common,
+    id: 'caso-valoracion',
+    name: 'Escuchar antes de cuidar',
+    type: 'Simulación',
+    description:
+      'Practica una valoración inicial de Enfermería centrada en la persona.',
+    patient: 'Persona ficticia E, 67 años. Consulta por cansancio.',
+    vitals: 'Datos aún no recogidos; no asumir estabilidad.',
+    careerId: 'enfermeria',
+    subjectId: 'fundamentos',
+    unitId: 'u-enfermeria',
+    areaId: 'enfermeria',
+    steps: [
+      step(
+        'v1',
+        '¿Cómo estableces el primer contacto?',
+        'Presentarte, verificar identidad ficticia, explicar y solicitar consentimiento.',
+        'Iniciar procedimientos sin explicación.',
+        'La identificación, comunicación y consentimiento forman parte de una atención centrada en la persona.',
+      ),
+      step(
+        'v2',
+        '¿Qué integra la valoración inicial?',
+        'Motivo de consulta, antecedentes, signos vitales y necesidades de cuidado.',
+        'Solo el diagnóstico escrito en una ficha.',
+        'Los datos subjetivos y objetivos orientan el razonamiento y ayudan a reconocer riesgos.',
+      ),
+      step(
+        'v3',
+        'Si identificas un hallazgo preocupante, ¿qué haces?',
+        'Registrar y comunicar oportunamente al equipo responsable.',
+        'Omitirlo hasta la siguiente práctica.',
+        'La comunicación oportuna y el registro objetivo apoyan la continuidad y seguridad del cuidado.',
+      ),
+    ],
+  },
+]
+export const seed: Database = {
+  version: 1,
+  areas,
+  careers: [
+    { id: 'enfermeria', name: 'Enfermería' },
+    { id: 'fisioterapia', name: 'Fisioterapia' },
+  ],
+  subjects: [
+    {
+      id: 'fundamentos',
+      name: 'Fundamentos de Morfofisiología',
+      careerId: 'enfermeria',
+      referenceTeacherId: 'docente1',
+    },
+    {
+      id: 'bio-enf',
+      name: 'Biología',
+      careerId: 'enfermeria',
+      referenceTeacherId: '',
+    },
+    {
+      id: 'bio-fisio',
+      name: 'Biología',
+      careerId: 'fisioterapia',
+      referenceTeacherId: '',
+    },
+    {
+      id: 'aplicada',
+      name: 'Morfofisiología Aplicada',
+      careerId: '',
+      referenceTeacherId: 'docente2',
+    },
+    {
+      id: 'practicas',
+      name: 'Simulaciones y prácticas de Fisioterapia',
+      careerId: 'fisioterapia',
+      referenceTeacherId: '',
+    },
+  ],
+  units: [
+    {
+      id: 'u-anatomia',
+      name: 'Estructura y función',
+      subjectId: 'fundamentos',
+      content:
+        'Anatomía: estudio de las estructuras. Fisiología: estudio de sus funciones. Los tejidos forman órganos que se integran en aparatos y sistemas.\nLos huesos sostienen y protegen; las articulaciones permiten o limitan movimiento y los músculos generan fuerza. Relaciona cada estructura con su función antes de analizar una alteración.',
+      mediaUrl: '',
+    },
+    {
+      id: 'u-enfermeria',
+      name: 'Valoración y cuidado seguro',
+      subjectId: 'fundamentos',
+      content:
+        'La valoración integra entrevista, observación y mediciones. Interpreta los signos vitales en contexto y comunica cambios relevantes.\nLa bioseguridad incluye higiene de manos, evaluación de riesgo y equipo de protección adecuado. Los cuidados básicos requieren comunicación, consentimiento y supervisión.',
+      mediaUrl: '',
+    },
+    {
+      id: 'u-biologia-enf',
+      name: 'Célula, energía y reparación',
+      subjectId: 'bio-enf',
+      content:
+        'Los niveles de organización van de moléculas a células, tejidos, órganos y sistemas. Las células contienen organelos especializados.\nLa membrana regula el transporte pasivo y activo. El ATP participa en el metabolismo y en la transferencia de energía.\nLa apoptosis es muerte celular regulada; la necrosis se asocia a daño y pérdida de integridad. La reparación puede incluir regeneración tisular o formación de cicatriz.',
+      mediaUrl: '',
+    },
+    {
+      id: 'u-biologia-fisio',
+      name: 'Biología del movimiento',
+      subjectId: 'bio-fisio',
+      content:
+        'La contracción muscular necesita ATP. El metabolismo aporta energía y la fatiga refleja múltiples factores. La reparación y regeneración dependen del tejido y de la magnitud de la lesión.',
+      mediaUrl: '',
+    },
+    {
+      id: 'u-aplicada',
+      name: 'Razonamiento anatómico aplicado',
+      subjectId: 'aplicada',
+      content:
+        'Relaciona una estructura con su función y con un hallazgo clínico ficticio. Describe localización, tejidos involucrados y posibles cambios funcionales sin asumir un diagnóstico. Carrera pendiente de asignación por la administración.',
+      mediaUrl: '',
+    },
+    {
+      id: 'u-fisio',
+      name: 'Movimiento y valoración funcional',
+      subjectId: 'practicas',
+      content:
+        'Observa marcha, movilidad y equilibrio. Explora contracción muscular, fatiga, lesión y recuperación en contexto. La evaluación funcional integra entrevista, seguridad, objetivos de la persona y tolerancia. Las actividades se adaptan tras una valoración profesional.',
+      mediaUrl: '',
+    },
+  ],
+  positions: [
+    {
+      id: 'director',
+      name: 'Director general',
+      parentId: '',
+      areaId: 'direccion',
+      responsibilities:
+        'Coordinar el hospital virtual y sus objetivos educativos.',
+    },
+    {
+      id: 'medico-dir',
+      name: 'Director médico / subdirector',
+      parentId: 'director',
+      areaId: 'direccion',
+      responsibilities: 'Coordinar el equipo médico ficticio.',
+    },
+    {
+      id: 'enf-dir',
+      name: 'Dirección de Enfermería',
+      parentId: 'director',
+      areaId: 'enfermeria',
+      responsibilities: 'Supervisar los cuidados y prácticas educativas.',
+    },
+    {
+      id: 'fisio-dir',
+      name: 'Coordinación de Fisioterapia',
+      parentId: 'director',
+      areaId: 'fisioterapia',
+      responsibilities: 'Organizar prácticas de movimiento y rehabilitación.',
+    },
+    {
+      id: 'jefe',
+      name: 'Jefatura de área',
+      parentId: 'medico-dir',
+      areaId: 'triaje',
+      responsibilities: 'Coordinar las actividades del área.',
+    },
+    {
+      id: 'medico',
+      name: 'Médico',
+      parentId: 'jefe',
+      areaId: 'emergencias',
+      responsibilities: 'Guiar razonamiento clínico supervisado.',
+    },
+    {
+      id: 'enfermero',
+      name: 'Enfermero',
+      parentId: 'enf-dir',
+      areaId: 'enfermeria',
+      responsibilities: 'Acompañar valoración y cuidados.',
+    },
+    {
+      id: 'fisio',
+      name: 'Fisioterapeuta',
+      parentId: 'fisio-dir',
+      areaId: 'fisioterapia',
+      responsibilities: 'Guiar valoración funcional.',
+    },
+    {
+      id: 'apoyo',
+      name: 'Personal de apoyo',
+      parentId: 'director',
+      areaId: 'recepcion',
+      responsibilities: 'Orientar y apoyar la organización.',
+    },
+    {
+      id: 'estudiante',
+      name: 'Estudiante en práctica',
+      parentId: 'enfermero',
+      areaId: 'simulacion',
+      responsibilities:
+        'Aprender bajo supervisión; sin funciones asistenciales reales.',
+    },
+  ],
+  people: [
+    {
+      id: 'p1',
+      name: 'Elena Mar Ficticia',
+      kind: 'Profesional',
+      positionId: 'director',
+      areaId: 'direccion',
+    },
+    {
+      id: 'p2',
+      name: 'Andrés Río Ficticio',
+      kind: 'Profesional',
+      positionId: 'medico-dir',
+      areaId: 'direccion',
+    },
+    {
+      id: 'p3',
+      name: 'Lucía Sol Ficticia',
+      kind: 'Profesional',
+      positionId: 'enf-dir',
+      areaId: 'enfermeria',
+    },
+    {
+      id: 'p4',
+      name: 'Mateo Valle Ficticio',
+      kind: 'Profesional',
+      positionId: 'fisio-dir',
+      areaId: 'fisioterapia',
+    },
+    {
+      id: 'p5',
+      name: 'Sara Lago Ficticia',
+      kind: 'Estudiante',
+      positionId: 'estudiante',
+      areaId: 'simulacion',
+    },
+    {
+      id: 'docente1',
+      name: 'Docente de referencia A (ficticia)',
+      kind: 'Docente de referencia',
+      positionId: '',
+      areaId: 'simulacion',
+    },
+    {
+      id: 'docente2',
+      name: 'Docente de referencia B (ficticia)',
+      kind: 'Docente de referencia',
+      positionId: '',
+      areaId: 'simulacion',
+    },
+  ],
+  cases,
+  attempts: [],
+  settings: [
+    {
+      id: 'general',
+      name: 'HOSPITAL VIRTUAL ULEAM',
+      welcome: 'Un espacio para aprender, decidir y cuidar.',
+    },
+  ],
+}
