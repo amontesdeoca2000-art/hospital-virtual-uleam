@@ -535,7 +535,7 @@ export default function App() {
                   Volver al curso <ArrowRight size={16} />
                 </button>
               </div>
-              <BoneLibrary />
+              <BoneLibrary courseId={chosenCourseId} />
             </>
           )}
           {page === 'hospital' && (
