@@ -15,14 +15,15 @@ it('muestra las tres extensiones y permite navegar a los cursos de cada carrera'
   expect(screen.getByRole('button', { name: /Chone/ })).toHaveAttribute('aria-pressed', 'true')
   await user.click(screen.getByRole('button', { name: 'Enfermería' }))
   expect(screen.getByText('Fundamentos de Morfofisiología')).toBeInTheDocument()
-  await user.click(screen.getAllByRole('button', { name: 'Explorar contenido' })[0])
+  await user.click(screen.getAllByRole('button', { name: 'Explorar vista previa' })[0])
   expect(onEnter).toHaveBeenCalledWith({
-    extension: 'Chone', careerId: 'enfermeria', subjectId: 'fundamentos'
+    extension: 'Chone', careerId: 'enfermeria', subjectId: 'fundamentos', courseId: 'chone:enf-morfo'
   })
 })
 
 it('aclara que todavía no existe matrícula ni cuentas personales', () => {
   render(<CourseDirectory subjects={seed.subjects} onEnter={() => {}} />)
-  expect(screen.getByText(/matrícula y las cuentas personales se habilitarán/)).toBeInTheDocument()
+  expect(screen.getByText(/Cada curso tendrá su propia clave de matrícula/)).toBeInTheDocument()
+  expect(screen.getAllByPlaceholderText('Se habilitará con matrícula segura')[0]).toBeDisabled()
   expect(screen.getByText(/Todavía no representan la oferta o las matrículas oficiales/)).toBeInTheDocument()
 })
