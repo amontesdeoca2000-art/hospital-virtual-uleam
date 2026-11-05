@@ -3,6 +3,7 @@ import {
   Activity,
   ArrowRight,
   BookOpen,
+  Bone,
   Building2,
   Check,
   ChevronRight,
@@ -32,6 +33,7 @@ import {
 } from './model'
 import { localRepository } from './services/repository'
 import { Admin } from './components/Admin'
+import { BoneLibrary } from './components/BoneLibrary'
 import { Modal } from './components/Modal'
 import { Simulator } from './components/Simulator'
 import './styles.css'
@@ -39,6 +41,7 @@ type Page =
   | 'inicio'
   | 'hospital'
   | 'academia'
+  | 'biblioteca-osea'
   | 'actividades'
   | 'organigrama'
   | 'resultados'
@@ -47,6 +50,7 @@ const navigation = [
   { id: 'inicio', label: 'Panel de bienvenida', icon: LayoutDashboard },
   { id: 'hospital', label: 'Explorar el hospital', icon: Building2 },
   { id: 'academia', label: 'Mi recorrido académico', icon: GraduationCap },
+  { id: 'biblioteca-osea', label: 'Biblioteca de los 206 huesos', icon: Bone },
   { id: 'actividades', label: 'Simulaciones y prácticas', icon: Stethoscope },
   { id: 'organigrama', label: 'Equipo y organigrama', icon: Network },
   { id: 'resultados', label: 'Mis resultados', icon: Trophy },
@@ -279,6 +283,8 @@ export default function App() {
                     ? 'Descubre los espacios, las funciones y las personas que hacen posible el cuidado.'
                     : page === 'academia'
                       ? 'Conecta lo que aprendes en el aula con decisiones en el hospital.'
+                      : page === 'biblioteca-osea'
+                        ? 'Aprende el sistema óseo con 206 fichas anatómicas, seguimiento personal y autoevaluaciones.'
                       : page === 'actividades'
                         ? 'Practica a tu ritmo. Reflexiona sobre cada decisión.'
                         : page === 'organigrama'
@@ -502,6 +508,7 @@ export default function App() {
               {cards(available.slice(0, 3))}
             </>
           )}
+          {page === 'biblioteca-osea' && <BoneLibrary />}
           {page === 'hospital' && (
             <>
               <div className="toolbar">
