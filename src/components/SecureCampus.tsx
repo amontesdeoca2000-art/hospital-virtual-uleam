@@ -28,7 +28,7 @@ function createRandomCode() {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
 }
 
-export function SecureCampus() {
+export function SecureCampus({onExploreDemo}: {onExploreDemo?: () => void}) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [courses, setCourses] = useState<Course[]>([])
@@ -217,6 +217,9 @@ export function SecureCampus() {
           <span><strong>HOSPITAL VIRTUAL ULEAM</strong><small>Campus académico · acceso por curso</small></span>
         </div>
         {profile && <div className="secure-header-user">
+          {(profile.role === 'teacher' || profile.role === 'admin') && onExploreDemo && (
+            <button type="button" className="secondary" onClick={onExploreDemo}>Explorar hospital anterior (demo)</button>
+          )}
           <span><UserRound size={16}/>{profile.full_name} · {profile.extension}</span>
           <button type="button" className="secondary" onClick={() => void doLogout()}><LogOut size={15}/> Salir</button>
         </div>}
