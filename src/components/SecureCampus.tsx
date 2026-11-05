@@ -4,6 +4,7 @@ import {
   KeyRound, LockKeyhole, LogOut, Plus, RefreshCw, ShieldCheck, UserRound,
 } from 'lucide-react'
 import { BoneLibrary } from './BoneLibrary'
+import { CourseWork } from './CourseWork'
 import {
   type Campus, type Course, type Enrollment, type Material, type Profile, type Session,
   addMaterial, createCourse, enroll, getBoneProgress, getCourses, getEnrollments,
@@ -268,12 +269,25 @@ export function SecureCampus({onExploreDemo}: {onExploreDemo?: () => void}) {
                   <h1>{openedCourse.title}</h1>
                   <p>Paralelo {openedCourse.parallel} · Período {openedCourse.academic_term}</p>
                 </section>
+                <CourseWork
+                  course={openedCourse}
+                  session={session}
+                  isStaff={managed(openedCourse)}
+                  onSession={setSession}
+                  onError={setError}
+                  onNotice={setNotice}
+                  onRefreshMaterials={async () => {
+                    const result = await getMaterials(session, openedCourse.id)
+                    setMaterials(result.value)
+                    setSession(result.session)
+                  }}
+                />
                 {materials.length === 0 ? (
                   <div className="empty"><BookOpen size={28}/><h3>El docente todavía no ha publicado materiales.</h3></div>
                 ) : materials.map((material) => (
                   <section key={material.id}>
                     {material.kind === 'bone-library' && openedCourse.subject_id === 'fundamentos'
-                      ? <BoneLibrary courseId={openedCourse.id} enrolledStudied={remoteProgress} onToggleStudied={updateBone}/>
+                      ? <BoneLibrary courseId={openedCourse.id} enrolledStudied={remoteProgress} readOnly={managed(openedCourse) && !enrolled(openedCourse.id)} onToggleStudied={updateBone}/>
                       : <article className="panel"><h2>{material.title}</h2><p>{material.description || 'Material académico del curso.'}</p></article>}
                   </section>
                 ))}
