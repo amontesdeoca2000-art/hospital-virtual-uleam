@@ -227,3 +227,73 @@ export async function saveBoneProgress(session: Session, courseId: string, boneI
     + '&course_id=eq.' + encodeURIComponent(courseId) + '&bone_id=eq.' + encodeURIComponent(boneId),
     'DELETE')
 }
+
+
+export type CourseAssignment = {
+  id: string
+  course_id: string
+  title: string
+  instructions: string
+  kind: 'actividad' | 'evaluacion'
+  max_score: number
+  due_at: string | null
+  published: boolean
+  created_at: string
+}
+export type StudentRoster = {
+  user_id: string
+  full_name: string
+  enrolled_at: string
+  studied_count: number
+  status: 'active' | 'blocked'
+}
+export type CourseSubmission = {
+  assignment_id: string
+  user_id: string
+  answer_text: string
+  submitted_at: string
+  score: number | null
+  feedback: string
+  graded_at: string | null
+}
+
+export function getCourseAssignments(session: Session, courseId: string) {
+  return withSession<CourseAssignment[]>(session,
+    '/rest/v1/course_assignments?select=id,course_id,title,instructions,kind,max_score,due_at,published,created_at&course_id=eq.'
+    + encodeURIComponent(courseId) + '&order=created_at.desc')
+}
+export function createCourseAssignment(
+  session: Session,
+  draft: Omit<CourseAssignment, 'id' | 'created_at'>,
+) {
+  return withSession<CourseAssignment[]>(session,'/rest/v1/course_assignments',
+    'POST',draft,'return=representation')
+}
+export function getCourseRoster(session: Session, courseId: string) {
+  return withSession<StudentRoster[]>(session,'/rest/v1/rpc/get_course_roster',
+    'POST',{p_course_id:courseId})
+}
+export function getAssignmentSubmissions(session: Session, assignmentIds: string[]) {
+  if (!assignmentIds.length) return Promise.resolve({value:[] as CourseSubmission[],session})
+  const ids = assignmentIds.map(encodeURIComponent).join(',')
+  return withSession<CourseSubmission[]>(session,
+    '/rest/v1/assignment_submissions?select=assignment_id,user_id,answer_text,submitted_at,score,feedback,graded_at'
+    + '&assignment_id=in.(' + ids + ')&order=submitted_at.desc')
+}
+export function submitCourseAssignment(session: Session, assignmentId: string, answer: string) {
+  return withSession<CodeResponse>(session,'/rest/v1/rpc/submit_course_assignment',
+    'POST',{p_assignment_id:assignmentId,p_answer:answer})
+}
+export function gradeCourseSubmission(
+  session: Session, assignmentId: string, studentId: string, score: number, feedback: string,
+) {
+  return withSession<boolean>(session,'/rest/v1/rpc/grade_course_submission',
+    'POST',{p_assignment_id:assignmentId,p_student_id:studentId,p_score:score,p_feedback:feedback})
+}
+export function createCourseReading(
+  session: Session, courseId: string, title: string, description: string,
+) {
+  return withSession<unknown>(session,'/rest/v1/course_materials','POST',{
+    course_id:courseId,title,description,kind:'reading',published:true,
+  })
+}

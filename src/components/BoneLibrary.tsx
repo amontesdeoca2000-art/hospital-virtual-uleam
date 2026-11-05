@@ -19,8 +19,9 @@ function questionFor(bone: Bone): Question {
     options: [bone.name, ...distractors.map((b) => b.name)].sort(() => Math.random() - 0.5),
   }
 }
-export function BoneLibrary({ courseId, enrolledStudied, onToggleStudied }: {
+export function BoneLibrary({ courseId, enrolledStudied, onToggleStudied, readOnly = false }: {
   courseId: string
+  readOnly?: boolean
   enrolledStudied?: string[]
   onToggleStudied?: (boneId: string, studied: boolean) => Promise<void>
 }) {
@@ -41,6 +42,7 @@ export function BoneLibrary({ courseId, enrolledStudied, onToggleStudied }: {
   ), [division, group, query])
   const currentStudied = enrolledStudied ?? studied
   function toggleStudied(id: string) {
+    if (readOnly) return
     if (onToggleStudied) {
       void onToggleStudied(id, !currentStudied.includes(id))
       return
@@ -135,10 +137,10 @@ export function BoneLibrary({ courseId, enrolledStudied, onToggleStudied }: {
             <div className="bone-fact"><strong>¿Cuál es su función?</strong><p>{selected.function}</p></div>
             <div className="bone-fact"><strong>¿Cómo reconocerlo?</strong><p>{selected.landmark}</p></div>
             <div className="bone-fact"><strong>Relación clínica</strong><p>{selected.clinical}</p></div>
-            <button className={currentStudied.includes(selected.id) ? 'secondary' : 'primary'} onClick={() => toggleStudied(selected.id)}>
+            {!readOnly && <button className={currentStudied.includes(selected.id) ? 'secondary' : 'primary'} onClick={() => toggleStudied(selected.id)}>
               <CheckCircle2 size={17} /> {currentStudied.includes(selected.id) ? 'Quitar marca de estudiado' : 'Marcar como estudiado'}
-            </button>
-            <p className="muted small">Este avance se guarda únicamente en este navegador. Uso educativo, no diagnóstico.</p>
+            </button>}
+            <p className="muted small">{readOnly ? 'Vista previa docente: el progreso se registra únicamente para estudiantes matriculados.' : onToggleStudied ? 'Tu avance se guarda en tu cuenta de estudiante.' : 'Avance guardado en este navegador.'} Uso educativo, no diagnóstico.</p>
           </section>
         </div>
       )}
