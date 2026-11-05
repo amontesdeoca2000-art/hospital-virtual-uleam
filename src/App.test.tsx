@@ -168,3 +168,23 @@ it('desactiva un área sin destruir los datos de sus actividades', async () => {
     localRepository.load().data.cases.some((c) => c.id === 'caso-triaje'),
   ).toBe(true)
 })
+
+it('muestra la biblioteca de huesos desde Morfofisiología, no en el menú global', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  expect(screen.queryByRole('button', { name: 'Biblioteca de los 206 huesos' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Extensiones y cursos' }))
+  await user.click(screen.getByRole('button', { name: 'Enfermería' }))
+  await user.click(screen.getAllByRole('button', { name: 'Explorar vista previa' })[0])
+  await user.click(screen.getByRole('button', { name: 'Abrir biblioteca de Morfofisiología' }))
+  expect(screen.getByRole('heading', { name: 'Biblioteca interactiva de los 206 huesos' })).toBeInTheDocument()
+})
+
+it('no ofrece la biblioteca de huesos en un curso de Fisioterapia', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(screen.getByRole('button', { name: 'Extensiones y cursos' }))
+  await user.click(screen.getByRole('button', { name: 'Fisioterapia' }))
+  await user.click(screen.getAllByRole('button', { name: 'Explorar vista previa' })[0])
+  expect(screen.queryByRole('button', { name: 'Abrir biblioteca de Morfofisiología' })).not.toBeInTheDocument()
+})
