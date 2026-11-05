@@ -1,3 +1,4 @@
+import { publicCampusUrl, publicCampusKey } from './publicCampusConfig'
 /**
  * Cliente mínimo para Supabase Auth y PostgREST.
  * No almacena contraseñas ni códigos de matrícula.
@@ -43,8 +44,8 @@ export type Session = {
 }
 export type CodeResponse = { ok: boolean; message: string }
 
-const baseUrl = String(import.meta.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '')
-const publishableKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '')
+const baseUrl = String(import.meta.env.VITE_SUPABASE_URL || publicCampusUrl).replace(/\/+$/, '')
+const publishableKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || publicCampusKey)
 const storageKey = 'hv-uleam:campus-session-v1'
 export const campusBackendReady =
   /^https:\/\/[a-z0-9.-]+$/i.test(baseUrl) && publishableKey.length > 15
