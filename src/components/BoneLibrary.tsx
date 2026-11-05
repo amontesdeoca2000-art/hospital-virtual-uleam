@@ -19,7 +19,11 @@ function questionFor(bone: Bone): Question {
     options: [bone.name, ...distractors.map((b) => b.name)].sort(() => Math.random() - 0.5),
   }
 }
-export function BoneLibrary({ courseId }: { courseId: string }) {
+export function BoneLibrary({ courseId, enrolledStudied, onToggleStudied }: {
+  courseId: string
+  enrolledStudied?: string[]
+  onToggleStudied?: (boneId: string, studied: boolean) => Promise<void>
+}) {
   const [division, setDivision] = useState('Todas')
   const [group, setGroup] = useState('Todos')
   const [query, setQuery] = useState('')
@@ -35,7 +39,12 @@ export function BoneLibrary({ courseId }: { courseId: string }) {
     (b.name + ' ' + b.location + ' ' + b.group).toLocaleLowerCase('es')
       .includes(query.trim().toLocaleLowerCase('es'))
   ), [division, group, query])
+  const currentStudied = enrolledStudied ?? studied
   function toggleStudied(id: string) {
+    if (onToggleStudied) {
+      void onToggleStudied(id, !currentStudied.includes(id))
+      return
+    }
     const next = studied.includes(id) ? studied.filter((x) => x !== id) : [...studied, id]
     setStudied(next)
     try { localStorage.setItem(storagePrefix + courseId, JSON.stringify(next)) } catch { /* sin almacenamiento disponible */ }
@@ -67,7 +76,7 @@ export function BoneLibrary({ courseId }: { courseId: string }) {
       <div className="bone-summary" aria-label="Composición y avance del esqueleto">
         <article><strong>80</strong><span>Esqueleto axial</span><small>Cráneo, columna y tórax</small></article>
         <article><strong>126</strong><span>Esqueleto apendicular</span><small>Cinturas y extremidades</small></article>
-        <article><strong>{studied.length}/206</strong><span>Huesos estudiados</span><progress value={studied.length} max={206} aria-label="Progreso de estudio" /></article>
+        <article><strong>{currentStudied.length}/206</strong><span>Huesos estudiados</span><progress value={currentStudied.length} max={206} aria-label="Progreso de estudio" /></article>
       </div>
       <div className="bone-note">El número 206 corresponde al modelo anatómico habitual del adulto. Algunas personas presentan variantes; en la infancia varios huesos aún no se han fusionado. Cada hueso derecho e izquierdo se cuenta por separado.</div>
       {quiz.length > 0 && (
@@ -108,11 +117,11 @@ export function BoneLibrary({ courseId }: { courseId: string }) {
         </div>
         <div className="bone-grid">
           {visible.map((bone) => (
-            <button key={bone.id} className={'bone-card ' + (studied.includes(bone.id) ? 'bone-studied' : '')}
+            <button key={bone.id} className={'bone-card ' + (currentStudied.includes(bone.id) ? 'bone-studied' : '')}
               onClick={() => setSelected(bone)} aria-label={'Ver ficha de ' + bone.name}>
               <span className="bone-icon" aria-hidden="true">🦴</span>
               <span className="bone-card-copy"><small>{bone.group} · {bone.division}</small><strong>{bone.name}</strong><span>{bone.location}</span></span>
-              {studied.includes(bone.id) && <CheckCircle2 size={19} aria-label="Estudiado" />}
+              {currentStudied.includes(bone.id) && <CheckCircle2 size={19} aria-label="Estudiado" />}
             </button>
           ))}
         </div>
@@ -126,8 +135,8 @@ export function BoneLibrary({ courseId }: { courseId: string }) {
             <div className="bone-fact"><strong>¿Cuál es su función?</strong><p>{selected.function}</p></div>
             <div className="bone-fact"><strong>¿Cómo reconocerlo?</strong><p>{selected.landmark}</p></div>
             <div className="bone-fact"><strong>Relación clínica</strong><p>{selected.clinical}</p></div>
-            <button className={studied.includes(selected.id) ? 'secondary' : 'primary'} onClick={() => toggleStudied(selected.id)}>
-              <CheckCircle2 size={17} /> {studied.includes(selected.id) ? 'Quitar marca de estudiado' : 'Marcar como estudiado'}
+            <button className={currentStudied.includes(selected.id) ? 'secondary' : 'primary'} onClick={() => toggleStudied(selected.id)}>
+              <CheckCircle2 size={17} /> {currentStudied.includes(selected.id) ? 'Quitar marca de estudiado' : 'Marcar como estudiado'}
             </button>
             <p className="muted small">Este avance se guarda únicamente en este navegador. Uso educativo, no diagnóstico.</p>
           </section>
