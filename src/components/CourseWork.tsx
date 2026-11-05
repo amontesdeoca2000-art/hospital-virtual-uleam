@@ -1,9 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { BookOpen, ClipboardCheck, Users, CheckCircle2 } from 'lucide-react'
+import { ClinicalSimulator } from './ClinicalSimulator'
+import { clinicalCases, caseById } from '../data/clinicalScenarios'
 import {
-  type Course, type CourseAssignment, type CourseSubmission, type Session,
+  type Course, type CourseAssignment, type CourseSubmission, type Session, type SimulationAttempt,
   type StudentRoster, getCourseAssignments, getAssignmentSubmissions, getCourseRoster,
   createCourseAssignment, submitCourseAssignment, gradeCourseSubmission, createCourseReading,
+  getSimulationAttempts,
 } from '../services/campusApi'
 import './CourseWork.css'
 
@@ -20,10 +23,12 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
   const [roster,setRoster]=useState<StudentRoster[]>([])
   const [assignments,setAssignments]=useState<CourseAssignment[]>([])
   const [submissions,setSubmissions]=useState<CourseSubmission[]>([])
+  const [simAttempts,setSimAttempts]=useState<SimulationAttempt[]>([])
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState(false)
   const [tab,setTab]=useState<'actividades'|'estudiantes'|'crear'>('actividades')
-  const [kind,setKind]=useState<'actividad'|'evaluacion'>('actividad')
+  const [kind,setKind]=useState<'actividad'|'evaluacion'|'simulacion'>('actividad')
+  const [scenarioId,setScenarioId]=useState('hipoglucemia-alerta')
   const [title,setTitle]=useState('')
   const [instructions,setInstructions]=useState('')
   const [maxScore,setMaxScore]=useState('10')
@@ -36,11 +41,12 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
   const nameFor=(id:string)=>roster.find(s=>s.user_id===id)?.full_name||'Estudiante matriculado'
   async function reload() {
     const a=await getCourseAssignments(session,course.id)
-    const [s,r]=await Promise.all([
-      getAssignmentSubmissions(a.session,a.value.map(x=>x.id)),
+    const [s,r,m]=await Promise.all([
+      getAssignmentSubmissions(a.session,a.value.filter(x=>x.kind!=='simulacion').map(x=>x.id)),
       isStaff?getCourseRoster(a.session,course.id):Promise.resolve(null),
+      getSimulationAttempts(a.session,a.value.filter(x=>x.kind==='simulacion').map(x=>x.id)),
     ])
-    setAssignments(a.value);setSubmissions(s.value);if(r)setRoster(r.value);onSession(s.session)
+    setAssignments(a.value);setSubmissions(s.value);setSimAttempts(m.value);if(r)setRoster(r.value);onSession(s.session)
   }
   useEffect(()=>{
     let active=true
@@ -48,12 +54,13 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
       setLoading(true)
       try{
         const a=await getCourseAssignments(session,course.id)
-        const [s,r]=await Promise.all([
-          getAssignmentSubmissions(a.session,a.value.map(x=>x.id)),
+        const [s,r,m]=await Promise.all([
+          getAssignmentSubmissions(a.session,a.value.filter(x=>x.kind!=='simulacion').map(x=>x.id)),
           isStaff?getCourseRoster(a.session,course.id):Promise.resolve(null),
+          getSimulationAttempts(a.session,a.value.filter(x=>x.kind==='simulacion').map(x=>x.id)),
         ])
         if(!active)return
-        setAssignments(a.value);setSubmissions(s.value);if(r)setRoster(r.value);onSession(s.session)
+        setAssignments(a.value);setSubmissions(s.value);setSimAttempts(m.value);if(r)setRoster(r.value);onSession(s.session)
       }catch(e){if(active)onError('No se pudo cargar el curso: '+errorMessage(e))}
       finally{if(active)setLoading(false)}
     }
@@ -75,7 +82,8 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
     void perform(async()=>{
       const r=await createCourseAssignment(session,{
         course_id:course.id,title:title.trim(),instructions:instructions.trim(),
-        kind,max_score:value,due_at:dueAt?new Date(dueAt).toISOString():null,published:true,
+        kind,scenario_id:kind==='simulacion'?scenarioId:null,max_score:value,
+        due_at:dueAt?new Date(dueAt).toISOString():null,published:true,
       })
       onSession(r.session);await reload();setTitle('');setInstructions('');setDueAt('');setTab('actividades')
     },'Actividad publicada en este curso.')
