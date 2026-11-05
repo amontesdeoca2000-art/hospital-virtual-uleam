@@ -34,12 +34,14 @@ import {
 import { localRepository } from './services/repository'
 import { Admin } from './components/Admin'
 import { BoneLibrary } from './components/BoneLibrary'
+import { CourseDirectory, type Extension } from './components/CourseDirectory'
 import { Modal } from './components/Modal'
 import { Simulator } from './components/Simulator'
 import './styles.css'
 type Page =
   | 'inicio'
   | 'hospital'
+  | 'cursos'
   | 'academia'
   | 'biblioteca-osea'
   | 'actividades'
@@ -48,6 +50,7 @@ type Page =
   | 'admin'
 const navigation = [
   { id: 'inicio', label: 'Panel de bienvenida', icon: LayoutDashboard },
+  { id: 'cursos', label: 'Extensiones y cursos', icon: GraduationCap },
   { id: 'hospital', label: 'Explorar el hospital', icon: Building2 },
   { id: 'academia', label: 'Mi recorrido académico', icon: GraduationCap },
   { id: 'biblioteca-osea', label: 'Biblioteca de los 206 huesos', icon: Bone },
@@ -70,6 +73,7 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [hospitalView, setHospitalView] = useState<'mapa' | 'fichas'>('mapa')
   const [caseArea, setCaseArea] = useState('')
+  const [chosenExtension, setChosenExtension] = useState<Extension | null>(null)
   function commit(next: Database) {
     localRepository.save(next)
     setData(next)
@@ -281,6 +285,8 @@ export default function App() {
                   ? data.settings[0].welcome
                   : page === 'hospital'
                     ? 'Descubre los espacios, las funciones y las personas que hacen posible el cuidado.'
+                    : page === 'cursos'
+                      ? 'Selecciona tu extensión, carrera y asignatura antes de explorar sus contenidos.'
                     : page === 'academia'
                       ? 'Conecta lo que aprendes en el aula con decisiones en el hospital.'
                       : page === 'biblioteca-osea'
@@ -319,9 +325,9 @@ export default function App() {
                   <div className="button-row">
                     <button
                       className="white-button"
-                      onClick={() => go('academia')}
+                      onClick={() => go('cursos')}
                     >
-                      Comenzar mi recorrido <ArrowRight size={17} />
+                      Elegir mi extensión y curso <ArrowRight size={17} />
                     </button>
                     <button
                       className="hero-link"
@@ -435,7 +441,7 @@ export default function App() {
                           setCareer(c.id)
                           setSubject('')
                           setUnit('')
-                          go('academia')
+                          go('cursos')
                         }}
                       >
                         <div
@@ -463,7 +469,7 @@ export default function App() {
                       setCareer('')
                       setSubject('')
                       setUnit('')
-                      go('academia')
+                      go('cursos')
                     }}
                   >
                     Ver toda la oferta académica <ArrowRight size={15} />
@@ -507,6 +513,18 @@ export default function App() {
               </div>
               {cards(available.slice(0, 3))}
             </>
+          )}
+          {page === 'cursos' && (
+            <CourseDirectory
+              subjects={data.subjects}
+              onEnter={({ extension, careerId, subjectId }) => {
+                setChosenExtension(extension)
+                setCareer(careerId)
+                setSubject(subjectId)
+                setUnit('')
+                go('academia')
+              }}
+            />
           )}
           {page === 'biblioteca-osea' && <BoneLibrary />}
           {page === 'hospital' && (
@@ -585,6 +603,7 @@ export default function App() {
           )}
           {page === 'academia' && (
             <>
+              {chosenExtension && <div className="notice"><strong>Extensión seleccionada: {chosenExtension}</strong><p>Vista académica de demostración. No representa una matrícula ni restringe el acceso a cursos de otras extensiones.</p><button className="text-button" onClick={() => go('cursos')}>Cambiar extensión o curso <ArrowRight size={15} /></button></div>}
               <section className="panel academic-select">
                 <div className="journey">
                   <span className={!career ? 'current' : ''}>1. Carrera</span>
