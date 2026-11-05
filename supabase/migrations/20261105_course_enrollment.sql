@@ -60,7 +60,7 @@ grant select,insert,update on public.academic_courses to authenticated;
 revoke delete on public.academic_courses from authenticated, anon;
 create policy "Catálogo publicado o propio de docente" on public.academic_courses for select
 to authenticated using (
-  published
+  (published and extension = (select p.extension from public.student_profiles p where p.id=(select auth.uid())))
   or teacher_id = (select auth.uid())
   or exists(select 1 from public.student_profiles p
             where p.id=(select auth.uid()) and p.role='admin')
@@ -221,19 +221,22 @@ to authenticated with check (
   exists(select 1 from public.academic_courses c
   join public.student_profiles p on p.id=(select auth.uid())
   where c.id=course_id and
-    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid()))))
+    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid())))
+    and (kind <> 'bone-library' or c.subject_id='fundamentos'))
 );
 create policy "Docente edita materiales de su curso" on public.course_materials for update
 to authenticated using (
   exists(select 1 from public.academic_courses c
   join public.student_profiles p on p.id=(select auth.uid())
   where c.id=course_id and
-    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid()))))
+    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid())))
+    and (kind <> 'bone-library' or c.subject_id='fundamentos'))
 ) with check(
   exists(select 1 from public.academic_courses c
   join public.student_profiles p on p.id=(select auth.uid())
   where c.id=course_id and
-    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid()))))
+    (p.role='admin' or (p.role='teacher' and c.teacher_id=(select auth.uid())))
+    and (kind <> 'bone-library' or c.subject_id='fundamentos'))
 );
 
 create table if not exists public.bone_study_progress (
