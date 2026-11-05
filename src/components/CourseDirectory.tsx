@@ -9,6 +9,7 @@ export type CoursePreview = {
   extension: Extension
   careerId: string
   subjectId: string
+  courseId: string
 }
 type Course = { id: string; subjectId: string; careerId: string; level: string; title: string }
 const demoCourses: Course[] = [
@@ -40,7 +41,7 @@ export function CourseDirectory({
       <section className="course-intro">
         <p className="eyebrow">HOSPITAL VIRTUAL ULEAM · CAMPUS ACADÉMICO</p>
         <h2>Encuentra tu espacio de aprendizaje</h2>
-        <p>Primero elige tu extensión y carrera. Después podrás entrar al contenido de tu asignatura. Esta es una vista de demostración: la matrícula y las cuentas personales se habilitarán cuando conectemos el sistema seguro de usuarios.</p>
+        <p>Primero elige tu extensión, carrera y curso. Cada curso tendrá su propia clave de matrícula, diferente de la contraseña personal del estudiante. De momento solo puedes explorar una vista previa: aún no se aceptan matrículas reales.</p>
       </section>
       <section aria-label="Seleccionar extensión">
         <div className="section-heading"><h2>1. Selecciona tu extensión</h2></div>
@@ -79,8 +80,13 @@ export function CourseDirectory({
               <p className="eyebrow">{extension.toUpperCase()} · {course.careerId === 'enfermeria' ? 'ENFERMERÍA' : 'FISIOTERAPIA'}</p>
               <h3>{course.title}</h3>
               <p>{course.level}</p>
-              <button type="button" className="text-button" onClick={() => onEnter({ extension, careerId: course.careerId, subjectId: course.subjectId })}>
-                Explorar contenido <ArrowRight size={16} />
+              <div className="course-demo-enrollment">
+                <label htmlFor={'enrollment-' + course.id}>Clave de matrícula de este curso</label>
+                <input id={'enrollment-' + course.id} type="password" disabled placeholder="Se habilitará con matrícula segura" autoComplete="off" />
+                <small>La matrícula aún no está activada. Cada extensión y curso tendrá su propia clave administrada por el docente.</small>
+              </div>
+              <button type="button" className="text-button" onClick={() => onEnter({ extension, careerId: course.careerId, subjectId: course.subjectId, courseId: extension.toLowerCase() + ':' + course.id })}>
+                Explorar vista previa <ArrowRight size={16} />
               </button>
             </article>
           ))}
@@ -91,7 +97,7 @@ export function CourseDirectory({
         <LockKeyhole size={27} />
         <div>
           <h2>Próximo paso: creación de cuentas y matrícula segura</h2>
-          <p>El formulario real solicitará nombres y apellidos, correo institucional, extensión y curso. Cada estudiante creará su propia contraseña y usará un código de matrícula autorizado por el docente. La inscripción, los permisos y las notas se guardarán en un servidor protegido, no en este navegador.</p>
+          <p>El registro real solicitará nombres y apellidos, correo institucional, extensión, carrera y curso. Cada estudiante creará su contraseña personal y deberá introducir la clave exclusiva del curso, creada o cambiada por su docente. El servidor validará la clave y la matrícula. No colocaremos esas claves en el código público del hospital ni guardaremos datos personales en este navegador.</p>
           <div className="course-future-points"><span><Users size={15} /> Cada estudiante, sus cursos</span><span><ShieldCheck size={15} /> Accesos gestionados por docentes</span></div>
         </div>
       </section>
