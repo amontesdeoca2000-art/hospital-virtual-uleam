@@ -4,6 +4,16 @@ Hospital general educativo para estudiantes de **Enfermería y Fisioterapia**, s
 
 > Es una simulación educativa, no un hospital real ni una herramienta institucional oficialmente aprobada. Todos los personajes y pacientes son ficticios. No sustituye atención profesional, protocolos clínicos ni supervisión docente. No introduzcas datos personales o clínicos reales.
 
+## Acceso de estudiantes y matrículas por curso (etapa en integración)
+
+Se ha preparado una opción de **registro con correo y contraseña**, perfiles asociados a **Chone, Tosagua o Pedernales** y cursos con **claves de matrícula exclusivas**. Cada estudiante podrá acceder únicamente al aula en que esté matriculado; la biblioteca de los 206 huesos se ofrece dentro de **Fundamentos de Morfofisiología / Morfofisiología Básica**.
+
+- Con dos variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`, la web entra en modo campus conectado a Supabase. Sin ellas **continúa funcionando la etapa 1 en modo demostración local**.
+- Las claves se verifican por funciones de base de datos, los intentos erróneos se limitan, y las reglas RLS separan cursos, matrículas y progreso.
+- **Falta configurar el proyecto Supabase**, ejecutar la migración, promover la primera cuenta administrativa y verificar el acceso con usuarios de prueba. No solicitar datos reales hasta completar ese procedimiento.
+- Configuración paso a paso: [docs/configuracion-supabase.md](docs/configuracion-supabase.md).
+- Implementación SQL: [supabase/migrations/20261105_course_enrollment.sql](supabase/migrations/20261105_course_enrollment.sql).
+
 ## Iniciar
 
 Requiere Node.js **24** (incluido en `.nvmrc`) y npm. También es compatible con los requisitos de Vite 7: Node 20.19+ o 22.12+.

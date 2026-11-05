@@ -33,6 +33,8 @@ import {
 import { localRepository } from './services/repository'
 import { Admin } from './components/Admin'
 import { BoneLibrary } from './components/BoneLibrary'
+import { SecureCampus } from './components/SecureCampus'
+import { campusBackendReady } from './services/campusApi'
 import { CourseDirectory, type Extension } from './components/CourseDirectory'
 import { Modal } from './components/Modal'
 import { Simulator } from './components/Simulator'
@@ -57,7 +59,7 @@ const navigation = [
   { id: 'resultados', label: 'Mis resultados', icon: Trophy },
   { id: 'admin', label: 'Administración', icon: SlidersHorizontal },
 ] as const
-export default function App() {
+function DemoApp() {
   const [initial] = useState(() => localRepository.load())
   const [data, setData] = useState(initial.data)
   const [warning, setWarning] = useState(initial.warning || '')
@@ -1009,4 +1011,19 @@ export default function App() {
       )}
     </div>
   )
+}
+
+/** La demo local permanece disponible para revisión docente. */
+export default function App() {
+  const [showTeacherDemo, setShowTeacherDemo] = useState(false)
+  if (!campusBackendReady) return <DemoApp />
+  if (showTeacherDemo) return (
+    <div>
+      <button className="secure-return-demo primary" onClick={() => setShowTeacherDemo(false)}>
+        Volver al campus académico
+      </button>
+      <DemoApp />
+    </div>
+  )
+  return <SecureCampus onExploreDemo={() => setShowTeacherDemo(true)} />
 }
