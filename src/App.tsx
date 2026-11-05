@@ -248,7 +248,7 @@ export default function App() {
             </button>
             <span className="breadcrumb">
               Hospital virtual <ChevronRight size={14} />{' '}
-              <strong>{navigation.find((n) => n.id === page)?.label}</strong>
+              <strong>{(page === 'biblioteca-osea' ? 'Biblioteca de los 206 huesos' : navigation.find((n) => n.id === page)?.label)}</strong>
             </span>
           </div>
           <div className="topbar-right">
@@ -277,7 +277,7 @@ export default function App() {
               <h1>
                 {page === 'inicio'
                   ? data.settings[0].name
-                  : navigation.find((n) => n.id === page)?.label}
+                  : (page === 'biblioteca-osea' ? 'Biblioteca de los 206 huesos' : navigation.find((n) => n.id === page)?.label)}
               </h1>
               <p>
                 {page === 'inicio'
