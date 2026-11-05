@@ -154,7 +154,7 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
               setTitle('Simulación clínica: '+(caseById(e.target.value)?.title||''))
             }}>{clinicalCases.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select>
             <small>El caso contiene valoración, exámenes simulados, intervenciones y reevaluación. Puntaje automático del servidor, hasta cinco intentos.</small>
-          </label>
+          </label>}
           <label>Título<input required minLength={5} maxLength={160} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Ej. Taller de huesos"/></label>
           <label>Instrucciones<textarea required minLength={10} maxLength={8000} rows={5} value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Describe lo que debe responder el estudiante"/></label>
           <label>Puntaje máximo<input type="number" required min="0.01" max="100" step="0.01" value={maxScore} onChange={e=>setMaxScore(e.target.value)}/></label>
