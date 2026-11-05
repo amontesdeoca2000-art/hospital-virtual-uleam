@@ -3,7 +3,6 @@ import {
   Activity,
   ArrowRight,
   BookOpen,
-  Bone,
   Building2,
   Check,
   ChevronRight,
@@ -53,7 +52,6 @@ const navigation = [
   { id: 'cursos', label: 'Extensiones y cursos', icon: GraduationCap },
   { id: 'hospital', label: 'Explorar el hospital', icon: Building2 },
   { id: 'academia', label: 'Mi recorrido académico', icon: GraduationCap },
-  { id: 'biblioteca-osea', label: 'Biblioteca de los 206 huesos', icon: Bone },
   { id: 'actividades', label: 'Simulaciones y prácticas', icon: Stethoscope },
   { id: 'organigrama', label: 'Equipo y organigrama', icon: Network },
   { id: 'resultados', label: 'Mis resultados', icon: Trophy },
@@ -74,6 +72,7 @@ export default function App() {
   const [hospitalView, setHospitalView] = useState<'mapa' | 'fichas'>('mapa')
   const [caseArea, setCaseArea] = useState('')
   const [chosenExtension, setChosenExtension] = useState<Extension | null>(null)
+  const [chosenCourseId, setChosenCourseId] = useState('')
   function commit(next: Database) {
     localRepository.save(next)
     setData(next)
@@ -517,8 +516,9 @@ export default function App() {
           {page === 'cursos' && (
             <CourseDirectory
               subjects={data.subjects}
-              onEnter={({ extension, careerId, subjectId }) => {
+              onEnter={({ extension, careerId, subjectId, courseId }) => {
                 setChosenExtension(extension)
+                setChosenCourseId(courseId)
                 setCareer(careerId)
                 setSubject(subjectId)
                 setUnit('')
@@ -526,7 +526,18 @@ export default function App() {
               }}
             />
           )}
-          {page === 'biblioteca-osea' && <BoneLibrary />}
+          {page === 'biblioteca-osea' && chosenExtension && subject === 'fundamentos' && chosenCourseId.endsWith(':enf-morfo') && (
+            <>
+              <div className="notice">
+                <strong>Biblioteca de Morfofisiología Básica · {chosenExtension}</strong>
+                <p>Este contenido está ubicado únicamente en el curso de Morfofisiología. Por ahora es una vista previa pública: la restricción por matrícula empezará cuando activemos usuarios y claves verificadas por un servidor.</p>
+                <button className="text-button" onClick={() => go('academia')}>
+                  Volver al curso <ArrowRight size={16} />
+                </button>
+              </div>
+              <BoneLibrary />
+            </>
+          )}
           {page === 'hospital' && (
             <>
               <div className="toolbar">
@@ -669,6 +680,16 @@ export default function App() {
                   </p>
                 )}
               </section>
+              {chosenExtension && chosenCourseId.endsWith(':enf-morfo') && subject === 'fundamentos' && (
+                <section className="panel content-panel">
+                  <p className="eyebrow">RECURSO EXCLUSIVO DE ESTA ASIGNATURA EN LA VERSIÓN FINAL</p>
+                  <h2>🦴 Biblioteca de aprendizaje: los 206 huesos</h2>
+                  <p>Explora el esqueleto axial y apendicular, practica con cuestionarios y revisa fichas anatómicas. Actualmente disponible solo como vista previa de la asignatura; aún no existe control real de matrícula.</p>
+                  <button className="primary" onClick={() => go('biblioteca-osea')}>
+                    Abrir biblioteca de Morfofisiología <ArrowRight size={16} />
+                  </button>
+                </section>
+              )}
               {!subject ? (
                 <div className="subject-grid">
                   {subjectList.map((s) => (
