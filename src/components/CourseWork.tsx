@@ -139,13 +139,27 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
       </div>}
       {isStaff&&tab==='crear'&&<div className="coursework-form-grid">
         <form className="coursework-panel" onSubmit={createAssignment}>
-          <h3><ClipboardCheck size={19}/> Nueva actividad o evaluación</h3>
-          <label>Tipo<select value={kind} onChange={e=>setKind(e.target.value as 'actividad'|'evaluacion')}><option value="actividad">Actividad</option><option value="evaluacion">Evaluación con respuesta escrita</option></select></label>
+          <h3><ClipboardCheck size={19}/> Nueva actividad, evaluación o simulación</h3>
+          <label>Tipo<select value={kind} onChange={e=>{
+              const next=e.target.value as 'actividad'|'evaluacion'|'simulacion'
+              setKind(next)
+              if(next==='simulacion'){
+                setTitle('Simulación clínica: '+(caseById(scenarioId)?.title||''))
+                setInstructions('Valora al paciente simulado, selecciona estudios, prioriza cuidados y comunica tus decisiones.')
+              }
+            }}><option value="actividad">Actividad</option><option value="evaluacion">Evaluación con respuesta escrita</option><option value="simulacion">Simulación clínica interactiva</option></select></label>
+          {kind==='simulacion'&&<label>Selecciona un paciente simulado
+            <select value={scenarioId} onChange={e=>{
+              setScenarioId(e.target.value)
+              setTitle('Simulación clínica: '+(caseById(e.target.value)?.title||''))
+            }}>{clinicalCases.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select>
+            <small>El caso contiene valoración, exámenes simulados, intervenciones y reevaluación. Puntaje automático del servidor, hasta cinco intentos.</small>
+          </label>
           <label>Título<input required minLength={5} maxLength={160} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Ej. Taller de huesos"/></label>
           <label>Instrucciones<textarea required minLength={10} maxLength={8000} rows={5} value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Describe lo que debe responder el estudiante"/></label>
           <label>Puntaje máximo<input type="number" required min="0.01" max="100" step="0.01" value={maxScore} onChange={e=>setMaxScore(e.target.value)}/></label>
           <label>Fecha límite (opcional)<input type="datetime-local" value={dueAt} onChange={e=>setDueAt(e.target.value)}/></label>
-          <small>Las respuestas se califican manualmente. El alumno no podrá ver otras entregas.</small>
+          <small>{kind==='simulacion'?'La simulación se evalúa automáticamente según decisiones clínicas y seguridad; los resultados se guardan por estudiante.':'Las respuestas escritas se califican manualmente. El alumno no puede ver otras entregas.'}</small>
           <button className="primary" type="submit" disabled={busy}>Publicar actividad</button>
         </form>
         <form className="coursework-panel" onSubmit={publishReading}>
@@ -163,10 +177,31 @@ export function CourseWork({course, session, isStaff, onSession, onError, onNoti
           const deliveries=submissions.filter(s=>s.assignment_id===a.id)
           const closed=a.due_at!==null&&new Date(a.due_at).getTime()<Date.now()
           return <article className="coursework-panel" key={a.id}>
-            <div className="coursework-assignment-head"><div><small>{a.kind==='evaluacion'?'EVALUACIÓN':'ACTIVIDAD'}</small><h4>{a.title}</h4></div><strong>Máximo {a.max_score} puntos</strong></div>
+            <div className="coursework-assignment-head"><div><small>{a.kind==='simulacion'?'SIMULACIÓN CLÍNICA':a.kind==='evaluacion'?'EVALUACIÓN':'ACTIVIDAD'}</small><h4>{a.title}</h4></div><strong>Máximo {a.max_score} puntos</strong></div>
             <p className="coursework-instructions">{a.instructions}</p>
             {a.due_at&&<p className="coursework-muted">Fecha límite: {new Date(a.due_at).toLocaleString('es-EC')}</p>}
-            {isStaff?<>
+            {a.kind==='simulacion'?<>
+              {isStaff&&<div className="coursework-sim-results">
+                <h4>Resultados de las simulaciones</h4>
+                <p className="coursework-muted">{simAttempts.filter(t=>t.assignment_id===a.id).length} intentos registrados</p>
+                {simAttempts.filter(t=>t.assignment_id===a.id).map(t=><div key={t.id} className="coursework-sim-row">
+                  <strong>{nameFor(t.user_id)}</strong>
+                  <span>{t.score}/{t.max_score} puntos</span>
+                  <small>{new Date(t.created_at).toLocaleString('es-EC')}</small>
+                </div>)}
+              </div>}
+              {closed&&!isStaff?<p className="coursework-muted">El plazo para realizar esta simulación ha terminado.</p>:
+              <ClinicalSimulator
+                key={a.id}
+                assignment={a}
+                session={session}
+                preview={isStaff}
+                attempts={simAttempts}
+                onSession={onSession}
+                onCompleted={reload}
+                onError={onError}
+              />}
+            </>:isStaff?<>
               <p className="coursework-muted">{deliveries.length} entregas · {deliveries.filter(s=>s.graded_at).length} calificadas</p>
               {!deliveries.length&&<p>Sin respuestas todavía.</p>}
               {deliveries.map(s=>{
