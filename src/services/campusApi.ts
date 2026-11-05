@@ -234,8 +234,9 @@ export type CourseAssignment = {
   course_id: string
   title: string
   instructions: string
-  kind: 'actividad' | 'evaluacion'
+  kind: 'actividad' | 'evaluacion' | 'simulacion'
   max_score: number
+  scenario_id: string | null
   due_at: string | null
   published: boolean
   created_at: string
@@ -259,7 +260,7 @@ export type CourseSubmission = {
 
 export function getCourseAssignments(session: Session, courseId: string) {
   return withSession<CourseAssignment[]>(session,
-    '/rest/v1/course_assignments?select=id,course_id,title,instructions,kind,max_score,due_at,published,created_at&course_id=eq.'
+    '/rest/v1/course_assignments?select=id,course_id,title,instructions,kind,scenario_id,max_score,due_at,published,created_at&course_id=eq.'
     + encodeURIComponent(courseId) + '&order=created_at.desc')
 }
 export function createCourseAssignment(
@@ -296,4 +297,39 @@ export function createCourseReading(
   return withSession<unknown>(session,'/rest/v1/course_materials','POST',{
     course_id:courseId,title,description,kind:'reading',published:true,
   })
+}
+
+export type SimulationAttempt = {
+  id: string
+  assignment_id: string
+  user_id: string
+  scenario_id: string
+  answers: Record<string, string>
+  score: number
+  max_score: number
+  created_at: string
+}
+export type SimulationGradeResult = {
+  ok: boolean
+  attempt_id: string
+  score: number
+  max_score: number
+  correct_count: number
+  safety_cap_applied: boolean
+  checks: Record<string, boolean>
+  attempt_number: number
+}
+export function getSimulationAttempts(session: Session, assignmentIds: string[]) {
+  if (!assignmentIds.length) return Promise.resolve({value: [] as SimulationAttempt[],session})
+  const ids = assignmentIds.map(encodeURIComponent).join(',')
+  return withSession<SimulationAttempt[]>(session,
+    '/rest/v1/simulation_attempts?select=id,assignment_id,user_id,scenario_id,answers,score,max_score,created_at'
+    + '&assignment_id=in.(' + ids + ')&order=created_at.desc')
+}
+export function submitSimulationAttempt(
+  session: Session, assignmentId: string, answers: Record<string,string>,
+) {
+  return withSession<SimulationGradeResult>(session,
+    '/rest/v1/rpc/submit_simulation_attempt',
+    'POST',{p_assignment_id:assignmentId,p_answers:answers})
 }
