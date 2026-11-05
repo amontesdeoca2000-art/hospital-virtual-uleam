@@ -1013,7 +1013,17 @@ function DemoApp() {
   )
 }
 
-/** La demo local funciona sin servidor; el campus seguro se activa al configurarlo. */
+/** La demo local permanece disponible para revisión docente. */
 export default function App() {
-  return campusBackendReady ? <SecureCampus /> : <DemoApp />
+  const [showTeacherDemo, setShowTeacherDemo] = useState(false)
+  if (!campusBackendReady) return <DemoApp />
+  if (showTeacherDemo) return (
+    <div>
+      <button className="secure-return-demo primary" onClick={() => setShowTeacherDemo(false)}>
+        Volver al campus académico
+      </button>
+      <DemoApp />
+    </div>
+  )
+  return <SecureCampus onExploreDemo={() => setShowTeacherDemo(true)} />
 }
