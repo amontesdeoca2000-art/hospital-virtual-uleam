@@ -119,8 +119,7 @@ create or replace function public.set_course_enrollment_code(p_course_id uuid,p_
 returns boolean language plpgsql security definer set search_path = '' as $$
 declare v_user uuid := auth.uid();
 begin
-  if v_user is null or p_code is null or p_code !~ '^[A-Za-z0-9_-]{10,64}
-  if not exists(
+  if v_user is null or p_code is null or p_code !~ '^[A-Za-z0-9_-]{10,64}  if not exists(
     select 1 from public.academic_courses c
     join public.student_profiles p on p.id=v_user
     where c.id=p_course_id and (
