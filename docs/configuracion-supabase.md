@@ -6,7 +6,7 @@
 
 1. Entra a https://supabase.com/dashboard e inicia sesión (o crea cuenta).
 2. Crea un proyecto para el Hospital Virtual ULEAM. Elige contraseña de base de datos **única** y guárdala fuera de GitHub.
-3. Abre **SQL Editor**. Revisa y ejecuta el archivo `supabase/migrations/20261105_course_enrollment.sql` del repositorio.
+3. Abre **SQL Editor**. Revisa y ejecuta el archivo `supabase/migrations/20261105_hospital_uleam_clean.sql` del repositorio.
 4. En **Authentication → Providers → Email**, habilita correo y contraseña, preferentemente **confirmación de email** y medidas de protección contra abuso.
 5. En **Authentication → URL Configuration**, registra la URL publicada `https://amontesdeoca2000-art.github.io/hospital-virtual-uleam/` como URL permitida de redirección. Ajusta también el Site URL si aplica. Una página de GitHub Pages no debe recibir contraseñas ni claves de servicio en la URL.
 
