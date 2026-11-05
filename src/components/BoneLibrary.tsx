@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BookOpen, CheckCircle2, RotateCcw, Search, Shuffle, Trophy } from 'lucide-react'
 import { bones, boneGroups, type Bone } from '../data/bones'
 import './BoneLibrary.css'
 
-const storageKey = 'hv-uleam:bones-studied-v1'
-function readStudied(): string[] {
+const storagePrefix = 'hv-uleam:bones-studied-v2:'
+function readStudied(courseId: string): string[] {
   try {
-    const data: unknown = JSON.parse(localStorage.getItem(storageKey) || '[]')
+    const data: unknown = JSON.parse(localStorage.getItem(storagePrefix + courseId) || '[]')
     return Array.isArray(data) ? data.filter((id): id is string => typeof id === 'string') : []
   } catch { return [] }
 }
@@ -19,12 +19,13 @@ function questionFor(bone: Bone): Question {
     options: [bone.name, ...distractors.map((b) => b.name)].sort(() => Math.random() - 0.5),
   }
 }
-export function BoneLibrary() {
+export function BoneLibrary({ courseId }: { courseId: string }) {
   const [division, setDivision] = useState('Todas')
   const [group, setGroup] = useState('Todos')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Bone | null>(null)
-  const [studied, setStudied] = useState<string[]>(readStudied)
+  const [studied, setStudied] = useState<string[]>(() => readStudied(courseId))
+  useEffect(() => { setStudied(readStudied(courseId)) }, [courseId])
   const [quiz, setQuiz] = useState<Question[]>([])
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [finished, setFinished] = useState(false)
@@ -37,7 +38,7 @@ export function BoneLibrary() {
   function toggleStudied(id: string) {
     const next = studied.includes(id) ? studied.filter((x) => x !== id) : [...studied, id]
     setStudied(next)
-    try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* sin almacenamiento disponible */ }
+    try { localStorage.setItem(storagePrefix + courseId, JSON.stringify(next)) } catch { /* sin almacenamiento disponible */ }
   }
   function startQuiz() {
     const sample = [...bones].sort(() => Math.random() - 0.5).slice(0, 10)
