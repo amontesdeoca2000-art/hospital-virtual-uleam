@@ -12,7 +12,7 @@ Se ha preparado una opción de **registro con correo y contraseña**, perfiles a
 - Las claves se verifican por funciones de base de datos, los intentos erróneos se limitan, y las reglas RLS separan cursos, matrículas y progreso.
 - **Falta configurar el proyecto Supabase**, ejecutar la migración, promover la primera cuenta administrativa y verificar el acceso con usuarios de prueba. No solicitar datos reales hasta completar ese procedimiento.
 - Configuración paso a paso: [docs/configuracion-supabase.md](docs/configuracion-supabase.md).
-- Implementación SQL: [supabase/migrations/20261105_course_enrollment.sql](supabase/migrations/20261105_course_enrollment.sql).
+- Implementación SQL: [supabase/migrations/20261105_hospital_uleam_clean.sql](supabase/migrations/20261105_hospital_uleam_clean.sql).
 
 ## Iniciar
 
