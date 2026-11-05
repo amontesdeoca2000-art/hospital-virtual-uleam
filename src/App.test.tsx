@@ -3,6 +3,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { localRepository } from './services/repository'
+// La batería de la etapa 1 verifica el hospital demostrativo sin conexión remota.
+vi.mock('./services/publicCampusConfig', () => ({publicCampusUrl: '', publicCampusKey: ''}))
 it('explora un área y abre su actividad', async () => {
   const u = userEvent.setup()
   render(<App />)
