@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import type { Session } from './campusApi'
 
 beforeEach(() => {
   vi.resetModules()
@@ -42,7 +43,7 @@ it('envía la matrícula exclusivamente a la función protegida del servidor', a
     return reply({ok: true, message:'Matrícula registrada correctamente.'})
   }))
   const api = await import('./campusApi')
-  const session: api.Session = {
+  const session: Session = {
     access_token: 'token-ficticio', refresh_token: 'refresco-ficticio',
     expires_at: Date.now() + 3600000, user: { id:'00000000-0000-0000-0000-000000000001' },
   }
@@ -61,7 +62,7 @@ it('no convierte en matrícula un rechazo del servidor por clave incorrecta', as
     ok: false, message: 'Clave de matrícula incorrecta.',
   })))
   const api = await import('./campusApi')
-  const session: api.Session = {
+  const session: Session = {
     access_token:'falso',refresh_token:'falso',expires_at:Date.now()+1000000,
     user:{id:'00000000-0000-0000-0000-000000000001'},
   }
