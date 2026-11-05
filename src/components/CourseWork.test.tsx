@@ -16,11 +16,13 @@ const session: Session = {
 }
 const fake = vi.hoisted(()=>({
   getCourseAssignments:vi.fn(),getAssignmentSubmissions:vi.fn(),getCourseRoster:vi.fn(),
+  getSimulationAttempts:vi.fn(),
   createCourseAssignment:vi.fn(),createCourseReading:vi.fn(),
   submitCourseAssignment:vi.fn(),gradeCourseSubmission:vi.fn(),
 }))
 vi.mock('../services/campusApi',()=>({...fake}))
 afterEach(()=>vi.clearAllMocks())
+fake.getSimulationAttempts.mockResolvedValue({session,value:[]})
 
 function mount(staff: boolean) {
   const onError=vi.fn(),onSession=vi.fn(),onNotice=vi.fn()
