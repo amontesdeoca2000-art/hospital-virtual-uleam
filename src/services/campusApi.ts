@@ -71,7 +71,7 @@ async function request<T>(
     method,
     headers: {
       apikey: publishableKey,
-      Authorization: 'Bearer ' + (token || publishableKey),
+      ...(token ? { Authorization: 'Bearer ' + token } : {}),
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
       ...(prefer ? { Prefer: prefer } : {}),
     },
